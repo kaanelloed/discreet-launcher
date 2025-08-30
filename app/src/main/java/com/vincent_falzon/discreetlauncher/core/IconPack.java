@@ -118,18 +118,20 @@ class IconPack
 	}
 
 	public Drawable getDrawable(String apk, String name) {
-		Uri uriPack = Uri.parse("content://" + pack_name + ".iconpack/icon/" + apk + "/" + name);
-		Cursor cursor = ctx.getContentResolver().query(uriPack, null, null, null, null);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			Uri uriPack = Uri.parse("content://" + pack_name + ".iconpack/icon/" + apk + "/" + name);
+			Cursor cursor = ctx.getContentResolver().query(uriPack, null, null, null, null);
 
-		if (cursor != null) {
-			if (cursor.moveToNext()) {
-				@SuppressLint("Range")
-				String resName = cursor.getString(cursor.getColumnIndex("ResourceName"));
+			if (cursor != null) {
+				if (cursor.moveToNext()) {
+					@SuppressLint("Range")
+					String resName = cursor.getString(cursor.getColumnIndex("ResourceName"));
 
+					cursor.close();
+					return getDrawable(resName);
+				}
 				cursor.close();
-				return getDrawable(resName);
 			}
-			cursor.close();
 		}
 
 		return null;
