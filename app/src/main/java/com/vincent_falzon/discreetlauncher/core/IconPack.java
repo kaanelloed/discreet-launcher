@@ -28,7 +28,12 @@ import android.content.Context ;
 import android.content.SharedPreferences ;
 import android.content.pm.PackageManager ;
 import android.content.res.Resources ;
+import android.content.res.loader.ResourcesLoader;
+import android.content.res.loader.ResourcesProvider;
 import android.graphics.drawable.Drawable ;
+import android.net.Uri;
+import android.os.Build;
+import android.os.ParcelFileDescriptor;
 import androidx.core.content.res.ResourcesCompat ;
 import androidx.preference.PreferenceManager ;
 import com.vincent_falzon.discreetlauncher.ActivityMain ;
@@ -87,8 +92,34 @@ class IconPack
 		appfilter_id = pack_resources.getIdentifier("appfilter", "xml", pack_name) ;
 		if(appfilter_id <= 0) appfilter_id = pack_resources.getIdentifier("appfilter", "raw", pack_name) ;
 		if(appfilter_id <= 0) Utils.displayLongToast(context, context.getString(R.string.error_icon_pack_appfilter_not_found, pack_name)) ;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			Uri uriRes = Uri.parse("content://" + pack_name + ".iconpack/resources");
+			try {
+				ParcelFileDescriptor fileDescriptor = context.getContentResolver().openFile(uriRes, "", null);
+				if (fileDescriptor != null)
+				{
+					ResourcesProvider provider = ResourcesProvider.loadFromApk(fileDescriptor);
+					ResourcesLoader loader = new ResourcesLoader();
+					loader.addProvider(provider);
+					pack_resources.addLoaders(loader);
+				}
+			} catch (IOException ignored) {
+
+			}
+		}
 	}
 
+	Drawable getDrawable(String name) {
+		if (pack_resources == null)
+			return null;
+
+		@SuppressLint("DiscouragedApi") int icon_id = pack_resources.getIdentifier(name, "drawable", pack_name) ;
+		if(icon_id > 0) return ResourcesCompat.getDrawable(pack_resources, icon_id, null) ;
+
+		// No icon to load
+		return null ;
+	}
 
 	/**
 	 * Search the icon of an application in the pack (returns <code>null</code> if not found).
