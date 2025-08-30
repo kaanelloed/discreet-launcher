@@ -114,7 +114,7 @@ public class ApplicationsList
 		PackageManager apkManager = context.getPackageManager() ;
 
 		// Browse all user profiles
-		Drawable icon = null ;
+		Drawable icon ;
 		Resources resources = context.getResources() ;
 		LauncherApps launcherApps = (LauncherApps)context.getSystemService(Context.LAUNCHER_APPS_SERVICE) ;
 		for(UserHandle profile : userProfiles)
