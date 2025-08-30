@@ -114,7 +114,7 @@ public class ApplicationsList
 		PackageManager apkManager = context.getPackageManager() ;
 
 		// Browse all user profiles
-		Drawable icon ;
+		Drawable icon = null ;
 		Resources resources = context.getResources() ;
 		LauncherApps launcherApps = (LauncherApps)context.getSystemService(Context.LAUNCHER_APPS_SERVICE) ;
 		for(UserHandle profile : userProfiles)
@@ -130,17 +130,7 @@ public class ApplicationsList
 				String name = activity.getName() ;
 				String apk = activity.getApplicationInfo().packageName ;
 
-				/*Uri uriPack = Uri.parse("content://dev.alembiconsproject.dyniconpack.iconpack/icon/" + apk + "/" + name);
-				Cursor cursor = context.getContentResolver().query(uriPack, null, null, null, null);
-
-				if (cursor != null) {
-					while (cursor.moveToNext()) {
-						@SuppressLint("Range")
-						int id = cursor.getInt(cursor.getColumnIndex("ResourceId"));
-						int r = id + 1;
-					}
-				}*/
-				icon = iconPack2.getDrawable(apk.replace('.', '_'));
+				icon = iconPack2.getDrawable(apk, name);
 
 				if (icon == null) {
 					// Try to find the icon in the packs, use the default icon if not found

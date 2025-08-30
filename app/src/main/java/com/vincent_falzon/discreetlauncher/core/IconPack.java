@@ -30,6 +30,7 @@ import android.content.pm.PackageManager ;
 import android.content.res.Resources ;
 import android.content.res.loader.ResourcesLoader;
 import android.content.res.loader.ResourcesProvider;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable ;
 import android.net.Uri;
 import android.os.Build;
@@ -56,6 +57,7 @@ class IconPack
 	private final String pack_name ;
 	private Resources pack_resources ;
 	private int appfilter_id ;
+	private final Context ctx ;
 
 
 	/**
@@ -64,6 +66,7 @@ class IconPack
 	@SuppressLint("DiscouragedApi")
 	IconPack(Context context, String setting_key)
 	{
+		ctx = context;
 		// Check if an icon pack is selected
 		appfilter_id = 0 ;
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context) ;
@@ -93,10 +96,14 @@ class IconPack
 		if(appfilter_id <= 0) appfilter_id = pack_resources.getIdentifier("appfilter", "raw", pack_name) ;
 		if(appfilter_id <= 0) Utils.displayLongToast(context, context.getString(R.string.error_icon_pack_appfilter_not_found, pack_name)) ;
 
+		AddResources();
+	}
+
+	private void AddResources() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 			Uri uriRes = Uri.parse("content://" + pack_name + ".iconpack/resources");
 			try {
-				ParcelFileDescriptor fileDescriptor = context.getContentResolver().openFile(uriRes, "", null);
+				ParcelFileDescriptor fileDescriptor = ctx.getContentResolver().openFile(uriRes, "", null);
 				if (fileDescriptor != null)
 				{
 					ResourcesProvider provider = ResourcesProvider.loadFromApk(fileDescriptor);
@@ -110,7 +117,25 @@ class IconPack
 		}
 	}
 
-	Drawable getDrawable(String name) {
+	public Drawable getDrawable(String apk, String name) {
+		Uri uriPack = Uri.parse("content://" + pack_name + ".iconpack/icon/" + apk + "/" + name);
+		Cursor cursor = ctx.getContentResolver().query(uriPack, null, null, null, null);
+
+		if (cursor != null) {
+			if (cursor.moveToNext()) {
+				@SuppressLint("Range")
+				String resName = cursor.getString(cursor.getColumnIndex("ResourceName"));
+
+				cursor.close();
+				return getDrawable(resName);
+			}
+			cursor.close();
+		}
+
+		return null;
+	}
+
+	private Drawable getDrawable(String name) {
 		if (pack_resources == null)
 			return null;
 
