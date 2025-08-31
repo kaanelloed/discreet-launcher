@@ -58,6 +58,7 @@ class IconPack
 	private Resources pack_resources ;
 	private int appfilter_id ;
 	private final Context ctx ;
+	private boolean dynamic = false ;
 
 
 	/**
@@ -96,7 +97,10 @@ class IconPack
 		if(appfilter_id <= 0) appfilter_id = pack_resources.getIdentifier("appfilter", "raw", pack_name) ;
 		if(appfilter_id <= 0) Utils.displayLongToast(context, context.getString(R.string.error_icon_pack_appfilter_not_found, pack_name)) ;
 
-		AddResources();
+		dynamic = pack_resources.getIdentifier("dynamic_icon_pack_identifier", "string", pack_name) > 0 ;
+		if (dynamic) {
+			AddResources();
+		}
 	}
 
 	private void AddResources() {
@@ -117,7 +121,7 @@ class IconPack
 		}
 	}
 
-	public Drawable getDrawable(String apk, String name) {
+	private Drawable getDrawable(String apk, String name) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 			Uri uriPack = Uri.parse("content://" + pack_name + ".iconpack/icon/" + apk + "/" + name);
 			Cursor cursor = ctx.getContentResolver().query(uriPack, null, null, null, null);
@@ -154,6 +158,12 @@ class IconPack
 	@SuppressLint("DiscouragedApi")
 	Drawable searchIcon(String apk, String name)
 	{
+		if (dynamic) {
+			Drawable dynIcon = getDrawable(apk, name);
+			if (dynIcon != null)
+				return dynIcon;
+		}
+
 		// Do not continue if no icon pack is loaded
 		if(appfilter_id <= 0) return null ;
 

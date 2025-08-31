@@ -130,12 +130,8 @@ public class ApplicationsList
 				String name = activity.getName() ;
 				String apk = activity.getApplicationInfo().packageName ;
 
-				icon = iconPack2.getDrawable(apk, name);
-
-				if (icon == null) {
-					// Try to find the icon in the packs, use the default icon if not found
-					icon = searchInMultipleIconPacks(iconPack1, iconPack2, apk, name);
-				}
+				// Try to find the icon in the packs, use the default icon if not found
+				icon = searchInMultipleIconPacks(iconPack1, iconPack2, apk, name) ;
 				if(icon == null)
 					{
 						// Check if a color tint must be applied on the default icon
